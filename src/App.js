@@ -1,27 +1,30 @@
-import React, { useState, useEffect } from "react";
-import { useRef} from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./App.css";
 
 function App() {
-  // --- Generate or retrieve persistent user_id ---
-  const [userId] = useState(() => {
-    const saved = localStorage.getItem("user_id");
-    if (saved) return saved;
-    const newId = crypto.randomUUID(); // generate unique id
-    localStorage.setItem("user_id", newId);
-    return newId;
-  });
-  
-  const [stage, setStage] = useState("Engaging and Focusing");
+  // --- Generate persistent user_id ---
+  function generateUUID() {
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
+      /[xy]/g,
+      function (c) {
+        const r = (Math.random() * 16) | 0;
+        const v = c === "x" ? r : (r & 0x3) | 0x8;
+        return v.toString(16);
+      }
+    );
+  }
+
+  const [userId] = useState(() => generateUUID());
+
   // Pomodoro state
-  const [time, setTime] = useState(25 * 60); // 25 min
+  const [time, setTime] = useState(25 * 60);
   const [isRunning, setIsRunning] = useState(false);
+
   const [task, setTask] = useState("");
   const [rewards, setRewards] = useState([]);
   const [isEnded, setIsEnded] = useState(false);
-  const chatEndRef = useRef(null);
-  const chatBoxRef = useRef(null);
 
+  const chatBoxRef = useRef(null);
 
   const addReward = () => {
     if (task.trim() !== "") {
@@ -29,73 +32,100 @@ function App() {
       setTask("");
     }
   };
+
   // Countdown logic
   useEffect(() => {
     let timer;
+
     if (isRunning && time > 0) {
-      timer = setInterval(() => setTime((t) => t - 1), 1000);
+      timer = setInterval(() => {
+        setTime((t) => t - 1);
+      }, 1000);
     }
+
     return () => clearInterval(timer);
   }, [isRunning, time]);
 
-
   const toggleTimer = () => setIsRunning(!isRunning);
+
   const resetTimer = () => {
     setIsRunning(false);
     setTime(25 * 60);
   };
+
   // Format time (MM:SS)
   const formatTime = (t) => {
     const m = Math.floor(t / 60)
       .toString()
       .padStart(2, "0");
+
     const s = (t % 60).toString().padStart(2, "0");
+
     return `${m}:${s}`;
   };
 
-  // --- Initial message (displayed only once) ---
+  // --- Initial message ---
   const initialMessage =
     "Hi! I’m ProactiMate, your motivational chatbot. My goal is to help you reflect on your procrastination habits and work towards overcoming them. I won’t give specific advice but will guide you to clarify your goals. What aspect of procrastination would you like to focus on today?";
 
   const [messages, setMessages] = useState([
-    { role: "assistant", content: initialMessage },
+    {
+      role: "assistant",
+      content: initialMessage,
+    },
   ]);
+
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  
+
+  // Auto-scroll chat
   useEffect(() => {
     if (chatBoxRef.current) {
       chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
     }
   }, [messages, loading]);
+
   // --- Send message to backend ---
   const sendMessage = async () => {
     if (!input.trim()) return;
 
-    const userMessage = { role: "user", content: input };
+    const userMessage = {
+      role: "user",
+      content: input,
+    };
+
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setLoading(true);
 
     try {
-      const response = await fetch("http://127.0.0.1:5001/chat", {
+      const response = await fetch("/chat", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
-          user_id: userId, // ✅ send user_id
+          user_id: userId,
           message: input,
         }),
       });
+
       const data = await response.json();
-      const assistantMessage = { role: "assistant", content: data.response };
 
-      // ✅ Append chatbot reply
+      const assistantMessage = {
+        role: "assistant",
+        content: data.response,
+      };
+
       setMessages((prev) => [...prev, assistantMessage]);
-      if (data.stage) setStage(data.stage);
 
-      // ✅ If farewell message is returned
+      // Farewell message
       if (data.farewell) {
-        const farewellMessage = { role: "assistant", content: data.farewell };
+        const farewellMessage = {
+          role: "assistant",
+          content: data.farewell,
+        };
+
         setMessages((prev) => [...prev, farewellMessage]);
         setIsEnded(true);
       }
@@ -108,62 +138,53 @@ function App() {
 
   // --- Handle Enter key ---
   const handleKeyPress = (e) => {
-    if (e.key === "Enter") sendMessage();
+    if (e.key === "Enter") {
+      sendMessage();
+    }
   };
+
   return (
     <div className="center-layout">
-      {/* Progress Bar Section */}
-      <div className="progress-bar-container">
-        <div className="progress-labels">
-          <span className={stage === "Engaging and Focusing" ? "active" : ""}>
-            Engaging & Focusing
-          </span>
-          <span className={stage === "Evoking" ? "active" : ""}>Evoking</span>
-          <span className={stage === "Planning" ? "active" : ""}>Planning</span>
-        </div>
-  
-        <div className="progress-bar">
-          <div
-            className="progress-fill"
-            style={{
-              width:
-                stage === "Engaging and Focusing"
-                  ? "33%"
-                  : stage === "Evoking"
-                  ? "66%"
-                  : "100%",
-            }}
-          ></div>
-        </div>
-      </div>
-  
-      {/* Chat Interface Section */}
+
+      {/* Chat Interface */}
       <div className="app-container">
         <h1>🕒 ProactiMate</h1>
-  
+
         <div className="chat-box" ref={chatBoxRef}>
           {messages.map((msg, idx) => (
             <div
               key={idx}
-              className={`message-row ${msg.role === "user" ? "user" : "assistant"}`}
+              className={`message-row ${
+                msg.role === "user" ? "user" : "assistant"
+              }`}
             >
-              {msg.role === "assistant" && <div className="avatar">🤖</div>}
+              {msg.role === "assistant" && (
+                <div className="avatar">🤖</div>
+              )}
+
               <div className={`message ${msg.role}`}>
-                <b>{msg.role === "user" ? "You" : "ProactiMate"}:</b> {msg.content}
+                <b>
+                  {msg.role === "user" ? "You" : "ProactiMate"}:
+                </b>{" "}
+                {msg.content}
               </div>
-              {msg.role === "user" && <div className="avatar">🧑</div>}
+
+              {msg.role === "user" && (
+                <div className="avatar">🧑</div>
+              )}
             </div>
           ))}
-  
+
           {loading && (
             <div className="message-row assistant">
               <div className="avatar">🤖</div>
-              <div className="message assistant">Typing...</div>
+              <div className="message assistant">
+                Typing...
+              </div>
             </div>
           )}
-          <div ref={chatEndRef} />
         </div>
-  
+
         <div className="input-box">
           <input
             type="text"
@@ -171,19 +192,19 @@ function App() {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyPress}
             placeholder="Type your message..."
-            disabled={isEnded}     // 🔴 disable input
+            disabled={isEnded}
           />
-  
-          <button onClick={sendMessage} disabled={isEnded || loading}>
+
+          <button
+            onClick={sendMessage}
+            disabled={isEnded || loading}
+          >
             Send
           </button>
         </div>
       </div>
     </div>
   );
-  
-   
-
-}    
+}
 
 export default App;
