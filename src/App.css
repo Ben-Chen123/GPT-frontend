@@ -43,49 +43,6 @@
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
 }
 
-/* ===== Progress Bar ===== */
-.progress-bar-container {
-  width: 100%;
-  text-align: center;
-}
-
-.progress-labels {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.9rem;
-  margin-bottom: 6px;
-}
-
-.progress-labels span {
-  color: #9ca3af;
-  transition: color 0.3s ease;
-}
-
-.progress-labels .active {
-  color: #2563eb;
-  font-weight: 600;
-}
-
-.progress-bar {
-  height: 16px;               /* 🔥 thicker */
-  background-color: #e5e7eb;  /* stronger contrast */
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #3b82f6, #2563eb);
-  transition: width 0.4s ease;
-  border-radius: 12px;
-  box-shadow: 0 0 10px rgba(37, 99, 235, 0.6);
-}
-
-/* consistent on hover */
-.progress-bar:hover .progress-fill {
-  background-color: #2563eb;
-}
 
 /* ===== Chat Container ===== */
 .app-container {
