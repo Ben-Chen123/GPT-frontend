@@ -834,11 +834,9 @@ function App() {
     </div>
   </div>
 )}
-       </div>
 
 
       
-  
       {/* ===== Right Side: Planner + Reward Tracker ===== */}
       <div className="right-panel">
         {stage === "Planning" && (
