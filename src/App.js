@@ -834,14 +834,10 @@ function App() {
     </div>
   </div>
 )}
-       </div>
 
-
-      
-  
-      {/* ===== Right Side: Planner + Reward Tracker ===== */}
-      <div className="right-panel">
-        {stage === "Planning" && (
+{/* ===== Right Side: Planner + Reward Tracker ===== */}
+<div className="right-panel">
+    {stage === "Planning" && (
           <div className="planner-section">
           <div className="planner-header">
             <h2>📝 Smart If–Then Planner</h2>
