@@ -571,29 +571,6 @@ function App() {
     <div className="main-layout">
       {/* ===== Left Side: Chatbot + Progress Bar + Pomodoro ===== */}
       <div className="left-panel">
-        {/* Progress Bar Section */}
-        <div className="progress-bar-container">
-          <div className="progress-labels">
-            <span className={stage === "Engaging and Focusing" ? "active" : ""}>
-            🔍Let's Understand
-            </span>
-            <span className={stage === "Evoking" ? "active" : ""}>🔥Let's Get Motivated</span>
-            <span className={stage === "Planning" ? "active" : ""}>📝Let's Make a Plan</span>
-          </div>
-  
-          <div className="progress-bar">
-            <div
-              className="progress-fill"
-              style={{
-                width:
-                  stage === "Engaging and Focusing"
-                    ? "33%"
-                    : stage === "Evoking"
-                    ? "66%"
-                    : "100%",
-              }}
-            ></div>
-          </div>
           <ProgressFeedback />
           {/* Suggested Action Area */}
 {progressType === "partial" && (
